@@ -1,0 +1,1 @@
+docker run -it --rm -v $PWD:/src --name backer jeremycollinsmpi/backer python test.py
