@@ -30,4 +30,20 @@ def test3():
   result = is_relevant(query, sources, use_api=True)
   print(result)
 
-test3()
+def test4():
+  query = 'What do you have for oily skin?'
+  product_descriptions = load_product_descriptions()
+  product_names = ['Neutrogena', '1452', '1454']
+  answer = find_most_relevant_products(query, product_names, product_descriptions)
+  print(answer)
+
+def test4():
+  query = 'What do you have for cleaning the floor?'
+  product_descriptions = load_product_descriptions()
+  product_names = ['Neutrogena', '1452', '1454']
+  answer = find_most_relevant_products(query, product_names, product_descriptions)
+  print(answer)
+
+
+
+test4()
