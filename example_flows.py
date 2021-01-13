@@ -1,4 +1,4 @@
-from query_functions import *
+from .query_functions import *
 import os
 
 def find_most_relevant_products(query, product_names, product_descriptions):
