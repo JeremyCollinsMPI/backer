@@ -9,6 +9,11 @@ try:
 except:
   url = 'http://0.0.0.0'
 
+
+def prune(sources):
+  sources.remove('')
+  return sources
+
 def is_relevant(query, sources, threshold=0.2, use_api=False):
   if use_api:  
     r = requests.post(url + ':8080/is_relevant', data=json.dumps({'query': query, 'sources': sources}))
@@ -36,6 +41,7 @@ def is_relevant_document(query, documents, threshold=0.2, use_api=False):
     for sentence in sentences:
       sources_dictionary[sentence] = i
   sources = list(sources_dictionary.keys())
+  sources = prune(sources)
   is_relevant_response = is_relevant(query, sources, threshold=0.2, use_api=False)
   is_relevant_result = is_relevant_response['result']
   print(is_relevant_result)
@@ -69,6 +75,7 @@ def is_most_relevant(query, sources, threshold = 0.2, use_api=False):
 
 def is_most_relevant_document(query, documents, threshold=0.2, use_api=False):
   if use_api:  
+    print('hello')
     r = requests.post(url + ':8080/is_most_relevant_document', data=json.dumps({'query': query, 'documents': documents}))
     return r.json()
   embeddings = Embeddings({"method": "transformers", "path": "sentence-transformers/bert-base-nli-mean-tokens"}) 
@@ -80,7 +87,8 @@ def is_most_relevant_document(query, documents, threshold=0.2, use_api=False):
     for sentence in sentences:
       sources_dictionary[sentence] = i
   sources = list(sources_dictionary.keys())
-  is_most_relevant_response = is_most_relevant(query, sources, threshold=0.2, use_api=False)
+  sources = prune(sources)
+  is_most_relevant_response = is_most_relevant(query, sources, threshold=0.2, use_api=use_api)
   is_most_relevant_result = is_most_relevant_response['result']
   indices_result = [sources_dictionary[source] for source in is_most_relevant_result]
   indices_result = np.unique(indices_result)

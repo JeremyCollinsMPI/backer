@@ -37,7 +37,7 @@ def test4():
   answer = find_most_relevant_products(query, product_names, product_descriptions)
   print(answer)
 
-def test4():
+def test5():
   query = 'What do you have for cleaning the floor?'
   product_descriptions = load_product_descriptions()
   product_names = ['Neutrogena', '1452', '1454']
@@ -46,4 +46,4 @@ def test4():
 
 
 
-test4()
+test5()
