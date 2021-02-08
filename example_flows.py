@@ -15,3 +15,8 @@ def find_most_relevant_products(query, product_names, product_descriptions, use_
     print('here3')
     return '我們可以推薦' + result[0], result[0]
 
+def classify_chatbot_query(query, use_api=False):
+  labels = ['asking for recommendation', 'asking for price']
+  classification = classify(query, labels, use_api=use_api)['result']
+  return classification
+  
