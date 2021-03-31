@@ -142,37 +142,3 @@ if __name__ == '__main__':
   app.run(host='0.0.0.0', port=8080)
 
 
-'''
-remaining tasks
-
-the idea is that you choose the options in the interface
-you click the button.
-it submits the whole state.
-it submits the files.
-it then submits a get request for the pipeline to run.
-
-
-say that the response is a dict with attribute result, that can have a string-ified list (e.g. joining together with <br>) or a string.
-
-
-check that the first step is finished first - done
-now need to check that submitting files is working - can accept an individual file
-need to work out directory structure of data.
-do you need to save the files?  might be better, if they are large.
-so in the fake database, you don't put the file in the object, you put the directory and filename.
-write a way of saving files in the data directory. - done
-write a way of getting the file type and saving it with the write extension - done
-finish the submit files function in the frontend - done
-update the fake database so that it stores the filename instead of the file in the dict. - done
-plan how the response is displayed - done, in the case of lists
-test displaying a dummy result
-
-
-
-
-
-
-
-
-
-'''
