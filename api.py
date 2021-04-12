@@ -3,6 +3,8 @@ from query_functions import *
 from flask_cors import CORS
 from pathlib import Path
 from werkzeug.utils import secure_filename
+import pandas as pd
+from time import sleep
 
 app = Flask(__name__)
 
@@ -84,6 +86,7 @@ def accept_steps_path():
   content = request.get_json(force=True)
   id = request.args.get('id')
   store_data(id, content['state'])
+  print('Steps *****')
   print(fake_database)
   return {'result': 'success'}
 
@@ -99,21 +102,33 @@ def accept_file_path():
   dictionary = load_data(id)
   dictionary = set_step_input(dictionary, step, "data/" + str(id) + '/' + str(step) + '/' + 'file' + '.' + extension)
   store_data(id, dictionary)
+  print('File *****')
   print(fake_database[id])
-  return {'result': 'success'}
+  return {'result': fake_database[id]}
 
 def prepare_for_display(list_result):
   list_result = '\n'.join(list_result)
   return list_result
+
+def get_sentences_from_csv(filename, column_name):
+  df = pd.read_csv(filename)
+  return df[column_name].tolist()
 
 def get_result(id):
   '''
   you then need to look up that id in the fake database
   
   '''
-  
-  
-  return ['hello', 'mate', 'goodbye']
+  current_result = ''
+  print(id)
+  print(fake_database)
+  data = fake_database[id]
+  for step_number in data['stepNumbers']:
+    step_number = int(step_number)
+    if data['functions'][0] == 'Get sentences from CSV':
+      sentences = get_sentences_from_csv(data['inputs'][0]['file'], data['additionalInputs'][0]['text'])
+      current_result = sentences
+  return current_result
   
 
 @app.route('/run', methods=['GET'])
@@ -133,8 +148,14 @@ def run_path():
   '''
   id = request.args.get('id')
   result = get_result(id)
+  print(fake_database)
+  '''
+  example:
+{'123': {'stepNumbers': [0], 'currentStepNumber': 0, 'functions': ['Get sentences from CSV'], 'inputs': [{'type': 'undefined'}], 'additionalInputs': [{'type': 'text', 'text': 'hello'}], 'r': {'result': []}, 'id': 123}}  '''
 #   if isinstance(result, list):
 #     result = prepare_for_display(result)
+  print('****')
+  print(result)
   return {'result': result}
   
   
