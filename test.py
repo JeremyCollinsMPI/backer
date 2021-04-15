@@ -44,6 +44,3 @@ def test5():
   answer = find_most_relevant_products(query, product_names, product_descriptions)
   print(answer)
 
-
-
-test5()
