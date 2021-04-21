@@ -115,7 +115,7 @@ def prepare_for_display(list_result):
 
 def get_sentences_from_csv(filename, column_name):
   df = pd.read_csv(filename)
-  return df[column_name].tolist()
+  return df[column_name].tolist()[0:100]
 
 def semantic_search(input, query):
   content = {'sentences': input, 'query': query}
@@ -142,7 +142,7 @@ def get_result(id):
       print('^^^^^^ true ', output_to_use)
     if data['functions'][step_number] == 'Get sentences from CSV':
       sentences = get_sentences_from_csv(data['inputs'][step_number]['file'], data['additionalInputs'][step_number]['text'])
-      current_result = sentences[0:10]
+      current_result = sentences
       data['outputs'].append(deepcopy(current_result))
     if data['functions'][step_number] == 'Semantic search':
       if use_previous_output:
