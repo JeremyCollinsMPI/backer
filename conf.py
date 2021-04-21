@@ -1,0 +1,1 @@
+gcp_url = 'https://demo10-7wmzgllota-de.a.run.app/run'
