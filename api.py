@@ -1,5 +1,4 @@
 from flask import Flask, request, send_file
-# from query_functions import *
 from flask_cors import CORS
 from pathlib import Path
 from werkzeug.utils import secure_filename
@@ -19,41 +18,6 @@ fake_database = {}
 def status():
   return {'statusCode': 200}
 
-# @app.route('/is_relevant', methods=['POST'])
-# def is_relevant_path():
-#   content = request.get_json(force=True) 
-#   query = content['query']
-#   sources = content['sources']
-#   return is_relevant(query, sources)
-# 
-# @app.route('/is_relevant_document', methods=['POST'])
-# def is_relevant_document_path():
-#   content = request.get_json(force=True) 
-#   query = content['query']
-#   documents = content['documents']
-#   return is_relevant_document(query, documents)
-# 
-# @app.route('/is_most_relevant', methods=['POST'])
-# def is_most_relevant_path():
-#   content = request.get_json(force=True) 
-#   query = content['query']
-#   sources = content['sources']
-#   return is_most_relevant(query, sources)
-# 
-# @app.route('/is_most_relevant_document', methods=['POST'])
-# def is_most_relevant_document_path():
-#   content = request.get_json(force=True) 
-#   query = content['query']
-#   documents = content['documents']
-#   return is_most_relevant_document(query, documents)
-# 
-# @app.route('/classify', methods=['POST'])
-# def classify_path():
-#   content = request.get_json(force=True) 
-#   query = content['query']
-#   sources = content['sources']
-#   return classify(query, sources)
-
 @app.route('/text_file_to_sentences', methods=['POST'])
 def text_file_to_sentences_path():
   file = request.files['file']
@@ -69,10 +33,6 @@ def search_for_path():
   return {'result': search_for(sentences, string)}
 
 def set_step_input(dictionary, step, file):
-  '''
-  structure is {'inputs': [{'type': 'file or directory', 'file': x}]}
-  
-  '''
   print(dictionary)
   step = int(step)
   dictionary['inputs'][step]['file'] = file
@@ -124,10 +84,6 @@ def semantic_search(input, query):
   return result.json()['result']
 
 def get_result(id):
-  '''
-  you then need to look up that id in the fake database
-  
-  '''
   current_result = ''
   print(id)
   print(fake_database)
@@ -155,29 +111,9 @@ def get_result(id):
 
 @app.route('/run', methods=['GET'])
 def run_path():
-  '''
-  you need an id here
-  
-  you need to work out where the data is saved
-  
-  
-  will make a fake database at the moment
-  
-  this database has ids as attributes.
-  the value is a dict.  functions is a list.  inputs is a list.  additionalinputs.  
-  
-  
-  
-  
-  '''
   id = request.args.get('id')
   result = get_result(id)
   print(fake_database)
-  '''
-  example:
-{'123': {'stepNumbers': [0], 'currentStepNumber': 0, 'functions': ['Get sentences from CSV'], 'inputs': [{'type': 'undefined'}], 'additionalInputs': [{'type': 'text', 'text': 'hello'}], 'r': {'result': []}, 'id': 123}}  '''
-#   if isinstance(result, list):
-#     result = prepare_for_display(result)
   print('****')
   print(result)
   return {'result': result}
