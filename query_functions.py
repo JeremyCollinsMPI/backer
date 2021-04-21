@@ -3,6 +3,7 @@ import numpy as np
 import requests
 import os
 import json
+from listify import *
 
 try:
   url = 'http://' + os.environ['backer_ip']
@@ -214,4 +215,10 @@ def classify(query, labels, threshold=0.2, use_api=False):
   response = {'result': result}
   return response
   
+
+@listify_already_list
+def search_for(sentences, string):
+  result = [x for x in sentences if string in x]
+  return result
+
 

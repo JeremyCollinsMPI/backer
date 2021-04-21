@@ -6,6 +6,8 @@ from werkzeug.utils import secure_filename
 import pandas as pd
 from time import sleep
 from copy import deepcopy
+from conf import *
+import requests
 
 app = Flask(__name__)
 
@@ -116,12 +118,10 @@ def get_sentences_from_csv(filename, column_name):
   return df[column_name].tolist()
 
 def semantic_search(input, query):
-  for i in range(len(input)):
-    input[i] = query + input[i]
-  print('HERE ******')
-  print(input)
-  print(query)
-  return input
+  content = {'sentences': input, 'query': query}
+  url = gcp_url
+  result = requests.post(url, json=content)
+  return result.json()['result']
 
 def get_result(id):
   '''

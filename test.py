@@ -1,5 +1,6 @@
-from query_functions import *
-from example_flows import *
+# from query_functions import *
+# from example_flows import *
+from api import *
 
 def test1():
   sources = ["US tops 5 million confirmed virus cases",
@@ -43,4 +44,15 @@ def test5():
   product_names = ['Neutrogena', '1452', '1454']
   answer = find_most_relevant_products(query, product_names, product_descriptions)
   print(answer)
+
+def test6():
+  input = ["one day I will see the world", 'hello my son', 'I love you']
+  query = 'travel'
+  print(semantic_search(input, query))
+
+test6()
+
+
+
+
 

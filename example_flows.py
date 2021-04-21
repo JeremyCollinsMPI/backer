@@ -2,6 +2,8 @@ from .query_functions import *
 import os
 
 def find_most_relevant_products(query, product_names, product_descriptions, use_api=False):
+  print('&&&&&')
+  print(query)
   relevant_descriptions = is_most_relevant_document(query, product_descriptions, use_api=use_api)['result']
   to_search_through = zip(product_names, product_descriptions)
   result = [x[0] for x in to_search_through if x[1] in relevant_descriptions]
