@@ -1,1 +1,1 @@
-gcp_url = 'https://demo10-7wmzgllota-de.a.run.app/run'
+gcp_ip = 'https://demo10-7wmzgllota-de.a.run.app'

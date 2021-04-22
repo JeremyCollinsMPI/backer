@@ -79,9 +79,16 @@ def get_sentences_from_csv(filename, column_name):
 
 def semantic_search(input, query):
   content = {'sentences': input, 'query': query}
-  url = gcp_url
+  url = gcp_ip + '/run'
   result = requests.post(url, json=content)
   return result.json()['result']
+
+def entails(input, query):
+  content = {'sentences': input, 'hypothesis': query}
+  url = gcp_ip + '/inference'
+  result = requests.post(url, json=content)
+  return result.json()['result']
+
 
 def get_result(id):
   current_result = ''
@@ -106,6 +113,12 @@ def get_result(id):
         query = data['additionalInputs'][step_number]['text']
         current_result = semantic_search(input, query)
         data['outputs'].append(deepcopy(current_result))
+    if data['functions'][step_number] == 'Entails':
+      if use_previous_output:
+        input = data['outputs'][output_to_use]
+        query = data['additionalInputs'][step_number]['text']
+        current_result = entails(input, query)
+        data['outputs'].append(deepcopy(current_result))    
   return current_result
   
 
