@@ -7,6 +7,7 @@ from time import sleep
 from copy import deepcopy
 from conf import *
 import requests
+from extract_text_from_html import *
 
 app = Flask(__name__)
 
@@ -89,6 +90,18 @@ def entails(input, query):
   result = requests.post(url, json=content)
   return result.json()['result']
 
+@app.route('/accept_urls', methods=['POST'])
+def accept_urls_path():
+  content = request.get_json(force=True)
+  result = []
+  for url in content['urls']:
+    text = extract_text_from_html(requests.get(url).content)
+    text = text.replace('\n', ' ')
+    texts = text.split('                                                       ')
+    for item in texts:
+      result.append([url, item])
+#   result.append(text)
+  return {'result': result}
 
 def get_result(id):
   current_result = ''
@@ -114,6 +127,7 @@ def get_result(id):
         current_result = semantic_search(input, query)
         data['outputs'].append(deepcopy(current_result))
     if data['functions'][step_number] == 'Entails':
+      print('***Entails***')
       if use_previous_output:
         input = data['outputs'][output_to_use]
         query = data['additionalInputs'][step_number]['text']
@@ -133,6 +147,6 @@ def run_path():
   
   
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port=8080)
+  app.run(host='0.0.0.0', port=8000)
 
 
