@@ -24,7 +24,6 @@ def text_file_to_sentences_path():
   file = request.files['file']
   file.save('data/moose.txt')
   return {'result': open('data/moose.txt', 'r').read().split('.')}
-#   return 'hello'
   
 @app.route('/search_for', methods=['POST'])
 def search_for_path():
@@ -34,7 +33,6 @@ def search_for_path():
   return {'result': search_for(sentences, string)}
 
 def set_step_input(dictionary, step, file):
-  print(dictionary)
   step = int(step)
   dictionary['inputs'][step]['file'] = file
   return dictionary
@@ -50,8 +48,6 @@ def accept_steps_path():
   content = request.get_json(force=True)
   id = request.args.get('id')
   store_data(id, content['state'])
-  print('Steps *****')
-  print(fake_database)
   return {'result': 'success'}
 
 @app.route('/accept_file', methods=['POST'])
@@ -66,8 +62,6 @@ def accept_file_path():
   dictionary = load_data(id)
   dictionary = set_step_input(dictionary, step, "data/" + str(id) + '/' + str(step) + '/' + 'file' + '.' + extension)
   store_data(id, dictionary)
-  print('File *****')
-  print(fake_database[id])
   return {'result': fake_database[id]}
 
 def prepare_for_display(list_result):
@@ -100,13 +94,10 @@ def accept_urls_path():
     texts = text.split('                                                       ')
     for item in texts:
       result.append([url, item])
-#   result.append(text)
   return {'result': result}
 
 def get_result(id):
   current_result = ''
-  print(id)
-  print(fake_database)
   data = fake_database[id]
   data['outputs'] = []
   for step_number in data['stepNumbers']:
@@ -115,7 +106,6 @@ def get_result(id):
     if data['inputs'][step_number]['type'] == 'Output':
       use_previous_output = True
       output_to_use = data['inputs'][step_number]['index']
-      print('^^^^^^ true ', output_to_use)
     if data['functions'][step_number] == 'Get sentences from CSV':
       sentences = get_sentences_from_csv(data['inputs'][step_number]['file'], data['additionalInputs'][step_number]['text'])
       current_result = sentences
@@ -127,12 +117,11 @@ def get_result(id):
         current_result = semantic_search(input, query)
         data['outputs'].append(deepcopy(current_result))
     if data['functions'][step_number] == 'Entails':
-      print('***Entails***')
       if use_previous_output:
         input = data['outputs'][output_to_use]
         query = data['additionalInputs'][step_number]['text']
         current_result = entails(input, query)
-        data['outputs'].append(deepcopy(current_result))    
+        data['outputs'].append(deepcopy(current_result))  
   return current_result
   
 
@@ -140,9 +129,6 @@ def get_result(id):
 def run_path():
   id = request.args.get('id')
   result = get_result(id)
-  print(fake_database)
-  print('****')
-  print(result)
   return {'result': result}
   
   
