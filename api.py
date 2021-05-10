@@ -84,6 +84,14 @@ def entails(input, query):
   result = requests.post(url, json=content)
   return result.json()['result']
 
+def ask_question(input, query):
+  result = []
+  for item in input:
+    content = {'text': item, 'question': query}
+    url = gcp_ip + '/question_answering'
+    result.append(requests.post(url, json=content).json()['result'])
+  return result
+    
 @app.route('/accept_urls', methods=['POST'])
 def accept_urls_path():
   content = request.get_json(force=True)
@@ -121,7 +129,13 @@ def get_result(id):
         input = data['outputs'][output_to_use]
         query = data['additionalInputs'][step_number]['text']
         current_result = entails(input, query)
-        data['outputs'].append(deepcopy(current_result))  
+        data['outputs'].append(deepcopy(current_result)) 
+    if data['functions'][step_number] == 'Ask question':
+      if use_previous_input:
+        input = data['outputs'][output_to_use]
+        query = data['additionalInputs'][step_number]['text']
+        current_result = ask_question(input, query)
+        data['outputs'].append(deepcopy(current_result))         
   return current_result
   
 
