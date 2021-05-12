@@ -107,6 +107,7 @@ def accept_urls_path():
 def get_result(id):
   current_result = ''
   data = fake_database[id]
+  print(data)
   data['outputs'] = []
   for step_number in data['stepNumbers']:
     step_number = int(step_number)
@@ -131,11 +132,14 @@ def get_result(id):
         current_result = entails(input, query)
         data['outputs'].append(deepcopy(current_result)) 
     if data['functions'][step_number] == 'Ask question':
+      print('matey')
       if use_previous_input:
         input = data['outputs'][output_to_use]
         query = data['additionalInputs'][step_number]['text']
         current_result = ask_question(input, query)
-        data['outputs'].append(deepcopy(current_result))         
+        data['outputs'].append(deepcopy(current_result))  
+#     if data['functions'][step_number] == 'Get sentences from url':
+#       sentences = get_sentences_from_url(data['inputs'])    
   return current_result
   
 
@@ -147,6 +151,6 @@ def run_path():
   
   
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port=8000)
+  app.run(host='0.0.0.0', port=8080)
 
 
