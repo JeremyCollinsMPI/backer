@@ -91,7 +91,13 @@ def ask_question(input, query):
     url = gcp_ip + '/question_answering'
     result.append(requests.post(url, json=content).json()['result'])
   return result
-    
+
+def get_sentences_from_url(url):
+  text = extract_text_from_html(requests.get(url).content)
+  text = text.replace('\n', ' ')
+  texts = text.split('                                                       ')
+  return texts
+
 @app.route('/accept_urls', methods=['POST'])
 def accept_urls_path():
   content = request.get_json(force=True)
@@ -133,13 +139,15 @@ def get_result(id):
         data['outputs'].append(deepcopy(current_result)) 
     if data['functions'][step_number] == 'Ask question':
       print('matey')
-      if use_previous_input:
+      if use_previous_output:
         input = data['outputs'][output_to_use]
         query = data['additionalInputs'][step_number]['text']
         current_result = ask_question(input, query)
         data['outputs'].append(deepcopy(current_result))  
-#     if data['functions'][step_number] == 'Get sentences from url':
-#       sentences = get_sentences_from_url(data['inputs'])    
+    if data['functions'][step_number] == 'Get sentences from url':
+      sentences = get_sentences_from_url(data['inputs']) 
+      current_result = sentences
+      data['outputs'] = append(deepcopy(current_result))   
   return current_result
   
 
