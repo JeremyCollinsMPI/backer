@@ -145,9 +145,9 @@ def get_result(id):
         current_result = ask_question(input, query)
         data['outputs'].append(deepcopy(current_result))  
     if data['functions'][step_number] == 'Get sentences from url':
-      sentences = get_sentences_from_url(data['inputs']) 
+      sentences = get_sentences_from_url(data['additionalInputs'][step_number]['text']) 
       current_result = sentences
-      data['outputs'] = append(deepcopy(current_result))   
+      data['outputs'].append(deepcopy(current_result))   
   return current_result
   
 
