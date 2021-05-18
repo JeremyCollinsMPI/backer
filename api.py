@@ -15,6 +15,12 @@ CORS(app)
 
 fake_database = {}
 
+@aapp.route('/wake_up_gcp', methods=['GET'])
+def wake_up_gcp_path():
+  url = gcp_ip + '/status'
+  r = requests.get(url)
+  return {'result': r.json()}
+
 @app.route('/status', methods=['GET'])
 def status():
   return {'statusCode': 200}
