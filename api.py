@@ -8,6 +8,8 @@ from copy import deepcopy
 from conf import *
 import requests
 from extract_text_from_html import *
+import random
+import string
 
 app = Flask(__name__)
 
@@ -48,6 +50,10 @@ def store_data(id, data):
 
 def load_data(id):
   return fake_database[id] 
+
+def generate_api_id():
+  return {'result': ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))}
+
 
 @app.route('/accept_steps', methods=['POST'])
 def accept_steps_path():
@@ -116,7 +122,10 @@ def accept_urls_path():
       result.append([url, item])
   return {'result': result}
 
-def get_result(id):
+def get_result(context):
+  if not 'mode' in context.keys():
+    context['mode'] = 'normal'
+  id = context['id']
   current_result = ''
   data = fake_database[id]
   print(data)
@@ -153,15 +162,28 @@ def get_result(id):
     if data['functions'][step_number] == 'Get sentences from url':
       sentences = get_sentences_from_url(data['additionalInputs'][step_number]['text']) 
       current_result = sentences
-      data['outputs'].append(deepcopy(current_result))   
-  return current_result
+      data['outputs'].append(deepcopy(current_result)) 
+    if data['functions'][step_number] == 'Make api link':
+      if not context['mode'] == 'within api':
+        api_id = generate_api_id()['result']  
+        api_id = id + '_' + api_id
+        data['api_id'] = api_id
+        current_result = [api_id]
+  return {'result': current_result}
   
+@app.route('/api/<string:api_id>', methods=['GET'])
+def api_path(api_id):
+  id = api_id.split('_')[0]
+  data = fake_database[id]
+  get_result_context = {'id': id, 'mode': 'within api'}
+  return {'result': get_result(get_result_context)['result']}
 
 @app.route('/run', methods=['GET'])
 def run_path():
   id = request.args.get('id')
-  result = get_result(id)
-  return {'result': result}
+  get_result_context = {'id': id}
+  result = get_result(get_result_context)
+  return {'result': result['result']}
   
   
 if __name__ == '__main__':
