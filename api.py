@@ -51,8 +51,8 @@ def store_data(id, data):
 def load_data(id):
   return fake_database[id] 
 
-def generate_api_id():
-  return {'result': ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))}
+def generate_api_id(context):
+  return {'result': context['ip'] + ':8080/api/' + context['id'] + '_' + ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(10))}
 
 
 @app.route('/accept_steps', methods=['POST'])
@@ -122,6 +122,18 @@ def accept_urls_path():
       result.append([url, item])
   return {'result': result}
 
+def get_input(context):
+  data = context['data']
+  step_number = context['step_number']
+  if data['inputs'][step_number]['type'] == 'Output':
+    output_to_use = data['inputs'][step_number]['index']
+    input = data['outputs'][output_to_use]
+  elif data['inputs'][step_number]['type'] == 'Api input':
+    input = context['content']['api_inputs']['step ' + str(step_number)]
+  else:
+    input = None
+  return {'result': input}
+
 def get_result(context):
   if not 'mode' in context.keys():
     context['mode'] = 'normal'
@@ -130,52 +142,47 @@ def get_result(context):
   data = fake_database[id]
   print(data)
   data['outputs'] = []
+  if 'Make api link' in data['functions']:
+    if not context['mode'] == 'within api':
+      context['ip'] = "http://103.102.44.216"
+      context['id'] = id
+      api_id = generate_api_id(context)['result']  
+      data['api_id'] = api_id
+      current_result = [api_id]
+      return {'result': current_result}
   for step_number in data['stepNumbers']:
     step_number = int(step_number)
-    use_previous_output = False
-    if data['inputs'][step_number]['type'] == 'Output':
-      use_previous_output = True
-      output_to_use = data['inputs'][step_number]['index']
+    get_input_result = get_input(context | {'data': data, 'step_number': step_number})
+    input = get_input_result['result']
     if data['functions'][step_number] == 'Get sentences from CSV':
       sentences = get_sentences_from_csv(data['inputs'][step_number]['file'], data['additionalInputs'][step_number]['text'])
       current_result = sentences
       data['outputs'].append(deepcopy(current_result))
     if data['functions'][step_number] == 'Semantic search':
-      if use_previous_output:
-        input = data['outputs'][output_to_use]
-        query = data['additionalInputs'][step_number]['text']
-        current_result = semantic_search(input, query)
-        data['outputs'].append(deepcopy(current_result))
+      query = data['additionalInputs'][step_number]['text']
+      current_result = semantic_search(input, query)
+      data['outputs'].append(deepcopy(current_result))
     if data['functions'][step_number] == 'Entails':
-      if use_previous_output:
-        input = data['outputs'][output_to_use]
-        query = data['additionalInputs'][step_number]['text']
-        current_result = entails(input, query)
-        data['outputs'].append(deepcopy(current_result)) 
+      query = data['additionalInputs'][step_number]['text']
+      current_result = entails(input, query)
+      data['outputs'].append(deepcopy(current_result)) 
     if data['functions'][step_number] == 'Ask question':
       print('matey')
-      if use_previous_output:
-        input = data['outputs'][output_to_use]
-        query = data['additionalInputs'][step_number]['text']
-        current_result = ask_question(input, query)
-        data['outputs'].append(deepcopy(current_result))  
+      query = data['additionalInputs'][step_number]['text']
+      current_result = ask_question(input, query)
+      data['outputs'].append(deepcopy(current_result))  
     if data['functions'][step_number] == 'Get sentences from url':
       sentences = get_sentences_from_url(data['additionalInputs'][step_number]['text']) 
       current_result = sentences
       data['outputs'].append(deepcopy(current_result)) 
-    if data['functions'][step_number] == 'Make api link':
-      if not context['mode'] == 'within api':
-        api_id = generate_api_id()['result']  
-        api_id = id + '_' + api_id
-        data['api_id'] = api_id
-        current_result = [api_id]
   return {'result': current_result}
   
-@app.route('/api/<string:api_id>', methods=['GET'])
+@app.route('/api/<string:api_id>', methods=['POST'])
 def api_path(api_id):
+  content = request.get_json(force=True)
   id = api_id.split('_')[0]
   data = fake_database[id]
-  get_result_context = {'id': id, 'mode': 'within api'}
+  get_result_context = {'id': id, 'mode': 'within api', 'content': content}
   return {'result': get_result(get_result_context)['result']}
 
 @app.route('/run', methods=['GET'])
