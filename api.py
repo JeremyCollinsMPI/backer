@@ -129,7 +129,9 @@ def get_input(context):
     output_to_use = data['inputs'][step_number]['index']
     input = data['outputs'][output_to_use]
   elif data['inputs'][step_number]['type'] == 'Api input':
-    input = context['content']['api_inputs']['step ' + str(step_number)]
+    input = data['api_inputs'][str(step_number)]
+  elif data['inputs'][step_number]['type'] == 'file or directory':
+    input = data['inputs'][step_number]['file']
   else:
     input = None
   return {'result': input}
@@ -155,7 +157,7 @@ def get_result(context):
     get_input_result = get_input(context | {'data': data, 'step_number': step_number})
     input = get_input_result['result']
     if data['functions'][step_number] == 'Get sentences from CSV':
-      sentences = get_sentences_from_csv(data['inputs'][step_number]['file'], data['additionalInputs'][step_number]['text'])
+      sentences = get_sentences_from_csv(input, data['additionalInputs'][step_number]['text'])
       current_result = sentences
       data['outputs'].append(deepcopy(current_result))
     if data['functions'][step_number] == 'Semantic search':
@@ -176,12 +178,40 @@ def get_result(context):
       current_result = sentences
       data['outputs'].append(deepcopy(current_result)) 
   return {'result': current_result}
+
+def submit_files_for_running_with_api(context):
+  if context['files'] == None:
+    return {'result': 'no files'}
+  id = context['id']
+  if not 'api_inputs' in fake_database[id]:
+    fake_database[id]['api_inputs'] = {}
+  for item in context['files'].items():
+    step = item[0]
+    file = item[1]
+    filename = secure_filename(file.filename)
+    extension = filename.split('.')[1]
+    Path("data/" + str(id) + '/' + str(step)).mkdir(parents=True, exist_ok=True)
+    file_path = "data/" + str(id) + '/' + str(step) + '/' + 'file' + '.' + extension
+    file.save(file_path)
+    fake_database[id]['api_inputs'][step] = file_path 
+  return {'result': 'success'}
+
+@app.route('/api_accept_files/<string:api_id>', methods=['POST'])
+def api_accept_files_path(api_id):
+  files = request.files
+  id = api_id.split('_')[0]
+  submit_files_for_running_with_api_result = submit_files_for_running_with_api({'id': id, 'files': files})
+  return submit_files_for_running_with_api_result 
   
 @app.route('/api/<string:api_id>', methods=['POST'])
 def api_path(api_id):
-  content = request.get_json(force=True)
+  content = request.json
   id = api_id.split('_')[0]
   data = fake_database[id]
+  if not 'api_inputs' in fake_database[id]:
+    fake_database[id]['api_inputs'] = {}
+  for key in content['api_inputs']:
+    data['api_inputs'][key] = content['api_inputs'][key]
   get_result_context = {'id': id, 'mode': 'within api', 'content': content}
   return {'result': get_result(get_result_context)['result']}
 
@@ -191,7 +221,6 @@ def run_path():
   get_result_context = {'id': id}
   result = get_result(get_result_context)
   return {'result': result['result']}
-  
   
 if __name__ == '__main__':
   app.run(host='0.0.0.0', port=8080)
