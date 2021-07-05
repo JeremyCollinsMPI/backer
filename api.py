@@ -110,6 +110,37 @@ def get_sentences_from_url(url):
   texts = text.split('                                                       ')
   return texts
 
+def get_labels(context):
+  filename = context['input']
+  column_name = context['data']['additionalInputs'][context['step_number']]['text'] 
+  df = pd.read_csv(filename)
+  return {'result': df[column_name].tolist()[0:100]}
+
+def compare_with_labels(context):
+  input = context['input']
+  step_number = context['step_number']
+  index = int(context['data']['additionalInputs'][step_number]['text']) - 1
+  labels = context['data']['outputs'][index]
+  texts_index = int(context['data']['additionalInputs'][step_number]['more'][0]['text']) - 1
+  texts = context['data']['outputs'][texts_index]
+  '''
+  the input now needs to be compared with the texts and labels
+  '''
+  result = {}
+  for i in range(len(input)):
+    member = input[i]
+    for j in range(len(texts)):
+      if member == texts[j]:
+        try:
+          x = result[labels[j]]
+          result[labels[j]] = result[labels[j]] + 1
+        except:
+          result[labels[j]] = 1
+  result = list(result.items())
+  result = [str(x[0]) + '\t' + str(x[1]) for x in result]
+  return {'result': result}
+    
+
 @app.route('/accept_urls', methods=['POST'])
 def accept_urls_path():
   content = request.get_json(force=True)
@@ -177,6 +208,20 @@ def get_result(context):
       sentences = get_sentences_from_url(data['additionalInputs'][step_number]['text']) 
       current_result = sentences
       data['outputs'].append(deepcopy(current_result)) 
+    if data['functions'][step_number] == 'Get labels':
+      get_labels_context = {'input': input, 'data': data, 'step_number': step_number}
+      get_labels_result = get_labels(get_labels_context)
+      current_result = get_labels_result['result']
+      data['outputs'].append(deepcopy(current_result))
+    if data['functions'][step_number] == 'Compare with labels':
+      compare_with_labels_context = {'input': input, 'data': data, 'step_number': step_number}
+      compare_with_labels_result = compare_with_labels(compare_with_labels_context)
+      current_result = compare_with_labels_result['result']
+      data['outputs'].append(deepcopy(current_result))
+    if data['functions'][step_number] == 'Union of outputs':
+      union_of_outputs_context = 
+      union_of_outputs_result = union_of_outputs(union_of_outputs_context)
+      
   return {'result': current_result}
 
 def submit_files_for_running_with_api(context):
